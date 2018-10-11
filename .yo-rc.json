@@ -1,0 +1,11 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "isCreatingSolution": true,
+    "environment": "spo",
+    "version": "1.6.0",
+    "libraryName": "countdown-timer",
+    "libraryId": "79c0428b-9bd4-4849-8355-706bfdc66881",
+    "packageManager": "npm",
+    "componentType": "webpart"
+  }
+}
