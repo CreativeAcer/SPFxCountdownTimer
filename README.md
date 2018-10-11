@@ -1,6 +1,10 @@
 ## countdown-timer
 
-This is where you include your WebPart documentation.
+This SharePoint WebPart will display a timer that can countdown to a specific date and time.
+The colors and title can be set through the propertypane.
+
+###example
+![alt text](https://github.com/CreativeAcer/SPFxCountdownTimer/example.png)
 
 ### Building the code
 
@@ -10,6 +14,14 @@ npm i
 npm i -g gulp
 gulp
 ```
+
+### Run the code in local workbench
+url: https://localhost:4321/temp/workbench.html
+
+npm run serve
+or
+gulp serve
+
 
 This package produces the following:
 
@@ -21,6 +33,5 @@ This package produces the following:
 
 gulp clean - TODO
 gulp test - TODO
-gulp serve - TODO
 gulp bundle - TODO
 gulp package-solution - TODO
