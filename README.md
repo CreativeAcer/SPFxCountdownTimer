@@ -4,7 +4,8 @@ This SharePoint WebPart will display a timer that can countdown to a specific da
 The colors and title can be set through the propertypane.
 
 ###example
-![alt text](https://github.com/CreativeAcer/SPFxCountdownTimer/example.png)
+
+![image](https://github.com/CreativeAcer/SPFxCountdownTimer/blob/master/example.PNG)
 
 ### Building the code
 
