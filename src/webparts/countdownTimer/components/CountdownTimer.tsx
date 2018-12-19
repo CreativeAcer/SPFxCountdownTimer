@@ -55,7 +55,7 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
       clearInterval(this.timeinterval);
   }
 
-  private _configureWebPart() {
+  private _configureWebPart = () => {
     this.props.context.propertyPane.open();
   }
   
@@ -68,7 +68,7 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
           iconText="List view web part configuration"
           description="Please configure the web part before you can show the list view."
           buttonLabel="Configure"
-          onConfigure={this._configureWebPart.bind(this)} />
+          onConfigure={this._configureWebPart} />
       );
     }
     return (
