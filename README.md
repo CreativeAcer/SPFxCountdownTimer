@@ -3,7 +3,7 @@
 This SharePoint WebPart will display a timer that can countdown to a specific date and time.
 The colors and title can be set through the propertypane.
 
-###example
+### Example
 
 ![image](https://github.com/CreativeAcer/SPFxCountdownTimer/blob/master/example.PNG)
 
