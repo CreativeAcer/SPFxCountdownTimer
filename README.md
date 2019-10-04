@@ -3,6 +3,19 @@
 This SharePoint WebPart will display a timer that can countdown to a specific date and time.
 The colors and title can be set through the propertypane.
 
+### PropertyPane settings
+
+Page 1:  
+Title: sets the title that will be displayed above the timer.  
+Repeat every: After the timer expires, timer will be reset to new date x amount of days in the future ( x is set here)  
+ex: Repeat set to 5, when the timer expires on 10/10 a new timer will be set for 15/10  
+Delay reset: This is the amount of hours the timer will remain at 0 0 0 0 before repeat is started  
+End date and Time: This is the initial Time and Date for the countdown  
+  
+Page 2:
+Font color: Color for the text
+Background color: Color for the background
+
 ### Example
 
 ![image](https://github.com/CreativeAcer/SPFxCountdownTimer/blob/master/example.PNG)

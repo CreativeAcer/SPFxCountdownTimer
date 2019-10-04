@@ -13,6 +13,7 @@ import { ICountdownTimerProps } from './components/ICountdownTimerProps';
 
 import { PropertyFieldColorPicker, PropertyFieldColorPickerStyle } from "@pnp/spfx-property-controls/lib/PropertyFieldColorPicker";
 import { PropertyFieldDateTimePicker, DateConvention, TimeConvention } from '@pnp/spfx-property-controls/lib/PropertyFieldDateTimePicker';
+import { PropertyFieldNumber } from '@pnp/spfx-property-controls/lib/PropertyFieldNumber';
 
 import { IDateTimeFieldValue } from "@pnp/spfx-property-controls/lib/PropertyFieldDateTimePicker";
 
@@ -20,12 +21,17 @@ import { IDateTimeFieldValue } from "@pnp/spfx-property-controls/lib/PropertyFie
 export interface ICountdownTimerWebPartProps {
   description: string;
   title: string;
+  recurrenceValue: number;
+  delayValue: number;
 }
 
 export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountdownTimerWebPartProps> {
   protected _backgroundcolor = '#0090c5';
   protected _fontcolor = '#fff';
   protected _endDate: IDateTimeFieldValue = {value: new Date(), displayValue: new Date().toDateString() };
+  protected _recurrenceValue: number = 0;
+  protected _delayValue: number = 0;
+  
 
   public render(): void {
     const element: React.ReactElement<ICountdownTimerProps > = React.createElement(
@@ -36,6 +42,8 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
         endDate: this._endDate,
         backgroundcolor: this._backgroundcolor,
         fontcolor: this._fontcolor,
+        recurrenceValue: this._recurrenceValue,
+        delayValue: this._delayValue,
         context: this.context
       }
     );
@@ -57,6 +65,8 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
     return true;
   }*/
 
+  protected checkIfDateUpdateNeeded(){}
+
   
   protected onPropertyPaneFieldChanged(propPath: string, oldValue: any, newValue:any): void {
     switch (propPath) {
@@ -68,6 +78,12 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
         break;
       case 'end date':
         this._endDate = newValue.value;
+        break;
+      case 'recurrence':
+        this._recurrenceValue = newValue;
+        break;
+      case 'delay':
+        this._delayValue = newValue;
         break;
       default:
         break;
@@ -90,7 +106,25 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
                 PropertyPaneTextField('title', {
                   label: 'Enter a title for the timer',
                   placeholder: 'Countdown',
-                  maxLength: 50                  
+                  maxLength: 50                
+                }),
+                PropertyFieldNumber("recurrence", {
+                  key: "recurrenceValue",
+                  label: "Repeat every",
+                  description: "Amount of days to add each cycle",
+                  value: this.properties.recurrenceValue,
+                  maxValue: 365,
+                  minValue: 0,
+                  disabled: false
+                }),
+                PropertyFieldNumber("delay", {
+                  key: "delayValue",
+                  label: "Delay reset for",
+                  description: "Amount of hours to wait before resetting counter",
+                  value: this.properties.delayValue,
+                  maxValue: 48,
+                  minValue: 0,
+                  disabled: false
                 }),
                 PropertyFieldDateTimePicker('end date', {
                   label: 'Select the enddate and time',
