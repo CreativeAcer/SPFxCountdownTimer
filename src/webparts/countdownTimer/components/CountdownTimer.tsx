@@ -29,7 +29,7 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
       minutesSpan : 0,
       secondsSpan : 0,
       resetDate: null,
-      showPlaceholder: false
+      showPlaceholder: true
     };
 
   }
