@@ -29,13 +29,14 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
       minutesSpan : 0,
       secondsSpan : 0,
       resetDate: null,
-      showPlaceholder: true
+      showPlaceholder: false
     };
+
   }
 
   public componentDidUpdate(prevProps: any, prevState: any) {
-    if (this.props.endDate !== prevProps.endDate) {
-      if (this.props.endDate !== null) {
+    if (this.props.enddate !== prevProps.enddate) {
+      if (this.props.enddate !== null) {
         // hide config warning
         this.setState({
           showPlaceholder: false
@@ -44,9 +45,9 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
         clearInterval(this.timeinterval);
         // Calc new reset date when date is changed
         this.setState({
-          resetDate: this.props.endDate.value
+          resetDate: this.props.enddate.value
         });
-        this.initializeClock(this.props.endDate);
+        this.initializeClock(this.props.enddate.value);
       } else {
         this.setState({
           showPlaceholder: true
@@ -56,8 +57,15 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
     
 }
 
-  // public componentDidMount() {
-  // }
+  public componentDidMount() {
+    // retain set date when refreshing or navigating
+    clearInterval(this.timeinterval);
+    this.setState({
+      showPlaceholder: false,
+      resetDate: this.props.enddate.value
+    });
+    this.initializeClock(this.props.enddate.value);
+  }
 
   public componentWillUnmount() {
       clearInterval(this.timeinterval);
@@ -141,17 +149,15 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
   }
 
   private setNewDates(){
-    var _self = this;
+    const _self = this;
 
     function waitForReset(){
-
+// hour
       if(dayjs().isAfter(dayjs(_self.state.resetDate).add(_self.props.delayValue, 'hour'), 'second')) {
+        //day
         _self.setState({
           resetDate : dayjs(_self.state.resetDate).add(_self.props.recurrenceValue, 'day').add(_self.props.delayValue, 'hour').toDate()
         });
-        // First reset interval then start with new date
-        clearInterval(_self.timeinterval);
-        clearInterval(_self.resetinterval);
         // Run timer again with new date
         _self.initializeClock(_self.state.resetDate);
       }

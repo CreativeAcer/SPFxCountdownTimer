@@ -45,7 +45,11 @@ This package produces the following:
 
 ### Build options
 
-gulp clean - TODO
-gulp test - TODO
-gulp bundle - TODO
-gulp package-solution - TODO
+If you would like to build the spfx package for production you can use the following command:  
+  
+```bash
+npm run package
+```  
+
+This will create the 'sppkg' file in the sharepoint directory.  
+Place this file in your SharePoint app catalog.

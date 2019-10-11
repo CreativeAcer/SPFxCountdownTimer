@@ -23,27 +23,28 @@ export interface ICountdownTimerWebPartProps {
   title: string;
   recurrenceValue: number;
   delayValue: number;
+  backgroundcolor: string;
+  fontcolor: string;
+  enddate: IDateTimeFieldValue;
+  resetdate: Date;
 }
 
 export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountdownTimerWebPartProps> {
-  protected _backgroundcolor = '#0090c5';
-  protected _fontcolor = '#fff';
-  protected _endDate: IDateTimeFieldValue = {value: new Date(), displayValue: new Date().toDateString() };
-  protected _recurrenceValue: number = 0;
-  protected _delayValue: number = 0;
-  
+  private _resetd: Date;
 
   public render(): void {
+
     const element: React.ReactElement<ICountdownTimerProps > = React.createElement(
       CountdownTimer,
       {
         description: this.properties.description,
         title: this.properties.title,
-        endDate: this._endDate,
-        backgroundcolor: this._backgroundcolor,
-        fontcolor: this._fontcolor,
-        recurrenceValue: this._recurrenceValue,
-        delayValue: this._delayValue,
+        enddate: this.properties.enddate,
+        resetdate: this._resetd,
+        backgroundcolor: this.properties.backgroundcolor,
+        fontcolor: this.properties.fontcolor,
+        recurrenceValue: this.properties.recurrenceValue,
+        delayValue: this.properties.delayValue,
         context: this.context
       }
     );
@@ -52,9 +53,40 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
 
     ReactDom.render(element, this.domElement);
   }
+  
 
   protected onDispose(): void {
     ReactDom.unmountComponentAtNode(this.domElement);
+  }
+
+  protected onInit(): Promise<void> {
+    // create a new promise
+    return new Promise<void>((resolve, _reject) => {
+        if (this.properties.backgroundcolor === undefined || this.properties.backgroundcolor === null) {
+          this.properties.backgroundcolor = '#0090c5';
+        }
+        if (this.properties.fontcolor === undefined || this.properties.fontcolor === null) {
+          this.properties.fontcolor = '#fff';
+        }
+        if (this.properties.enddate === undefined || this.properties.enddate === null) {
+          this.properties.enddate = {value: new Date(), displayValue: new Date().toDateString() };
+        }else {
+          this.properties.enddate = this.properties.enddate;
+        }
+        if (this._resetd === undefined || this._resetd === null) {
+          this._resetd = this.properties.enddate.value;
+        }else {
+          this._resetd = this._resetd;
+        }
+        if (this.properties.recurrenceValue === undefined || this.properties.recurrenceValue === null) {
+            this.properties.recurrenceValue = 0;
+        }
+        if (this.properties.delayValue === undefined || this.properties.delayValue === null) {
+          this.properties.delayValue = 0;
+        }
+        // resolve the promise
+        resolve(undefined);
+    });
   }
 
   protected get dataVersion(): Version {
@@ -65,30 +97,9 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
     return true;
   }*/
 
-  protected checkIfDateUpdateNeeded(){}
-
   
   protected onPropertyPaneFieldChanged(propPath: string, oldValue: any, newValue:any): void {
-    switch (propPath) {
-      case 'font color':
-        this._fontcolor = newValue;
-        break;
-      case 'background color':
-        this._backgroundcolor = newValue;
-        break;
-      case 'end date':
-        this._endDate = newValue.value;
-        break;
-      case 'recurrence':
-        this._recurrenceValue = newValue;
-        break;
-      case 'delay':
-        this._delayValue = newValue;
-        break;
-      default:
-        break;
-    }
-    
+    this.properties[propPath] = newValue;    
   }
   
 
@@ -96,6 +107,7 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
     return {
       pages: [
         {
+          displayGroupsAsAccordion: true,
           header: {
             description: strings.PropertyPaneDescription
           },
@@ -108,8 +120,25 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
                   placeholder: 'Countdown',
                   maxLength: 50                
                 }),
-                PropertyFieldNumber("recurrence", {
-                  key: "recurrenceValue",
+                PropertyFieldDateTimePicker('enddate', {
+                  label: 'Select the enddate and time',
+                  initialDate: this.properties.enddate,
+                  dateConvention: DateConvention.DateTime,
+                  timeConvention: TimeConvention.Hours24,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  properties: this.properties,
+                  onGetErrorMessage: null,
+                  deferredValidationTime: 0,
+                  key: 'enddateId'
+                })
+              ]
+            },
+            {
+              groupName: strings.RepeatGroupName,
+              isCollapsed: true,
+              groupFields: [
+                PropertyFieldNumber("recurrenceValue", {
+                  key: "recurrenceValueId",
                   label: "Repeat every",
                   description: "Amount of days to add each cycle",
                   value: this.properties.recurrenceValue,
@@ -117,64 +146,47 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
                   minValue: 0,
                   disabled: false
                 }),
-                PropertyFieldNumber("delay", {
-                  key: "delayValue",
+                PropertyFieldNumber("delayValue", {
+                  key: "delayValueId",
                   label: "Delay reset for",
                   description: "Amount of hours to wait before resetting counter",
                   value: this.properties.delayValue,
                   maxValue: 48,
                   minValue: 0,
                   disabled: false
-                }),
-                PropertyFieldDateTimePicker('end date', {
-                  label: 'Select the enddate and time',
-                  initialDate: this._endDate,
-                  dateConvention: DateConvention.DateTime,
-                  timeConvention: TimeConvention.Hours24,
+                })
+              ]
+            },
+            {
+              groupName: strings.ColorGroupName,
+              isCollapsed: true,
+              groupFields: [
+                PropertyFieldColorPicker("fontcolor", {
+                  label: "Font Color",
+                  selectedColor: this.properties.fontcolor,
                   onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
                   properties: this.properties,
-                  onGetErrorMessage: null,
-                  deferredValidationTime: 0,
-                  key: 'dateTimeFieldId'
+                  disabled: false,
+                  alphaSliderHidden: false,
+                  style: PropertyFieldColorPickerStyle.Full,
+                  iconName: "Precipitation",
+                  key: "fontcolorId"
+                }),
+                PropertyFieldColorPicker("backgroundcolor", {
+                  label: "Background Color",
+                  selectedColor: this.properties.backgroundcolor,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  properties: this.properties,
+                  disabled: false,
+                  alphaSliderHidden: false,
+                  style: PropertyFieldColorPickerStyle.Full,
+                  iconName: "Precipitation",
+                  key: "backgroundcolorId"
                 })
               ]
             }
           ]
         },
-        {
-          header: {
-            description: strings.PropertyPaneDescription
-          },
-          groups: [
-            {
-              groupName: strings.ColorGroupName,
-              groupFields: [
-                PropertyFieldColorPicker("font color", {
-                  label: "Font Color",
-                  selectedColor: this._fontcolor,
-                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
-                  properties: this.properties,
-                  disabled: false,
-                  alphaSliderHidden: false,
-                  style: PropertyFieldColorPickerStyle.Full,
-                  iconName: "Precipitation",
-                  key: "colorFieldId"
-                }),
-                PropertyFieldColorPicker("background color", {
-                  label: "Background Color",
-                  selectedColor: this._backgroundcolor,
-                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
-                  properties: this.properties,
-                  disabled: false,
-                  alphaSliderHidden: false,
-                  style: PropertyFieldColorPickerStyle.Full,
-                  iconName: "Precipitation",
-                  key: "colorFieldId"
-                })
-              ]
-            }
-          ]
-        }
       ]
     };
   }
