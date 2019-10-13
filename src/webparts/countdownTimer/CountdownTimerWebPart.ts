@@ -21,12 +21,12 @@ import { IDateTimeFieldValue } from "@pnp/spfx-property-controls/lib/PropertyFie
 export interface ICountdownTimerWebPartProps {
   description: string;
   title: string;
+  isInitialized: boolean;
   recurrenceValue: number;
   delayValue: number;
   backgroundcolor: string;
   fontcolor: string;
   enddate: IDateTimeFieldValue;
-  resetdate: Date;
 }
 
 export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountdownTimerWebPartProps> {
@@ -45,6 +45,7 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
         fontcolor: this.properties.fontcolor,
         recurrenceValue: this.properties.recurrenceValue,
         delayValue: this.properties.delayValue,
+        isInitialized: this.properties.isInitialized,
         context: this.context
       }
     );
@@ -60,6 +61,7 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
   }
 
   protected onInit(): Promise<void> {
+    this.properties.isInitialized = false;
     // create a new promise
     return new Promise<void>((resolve, _reject) => {
         if (this.properties.backgroundcolor === undefined || this.properties.backgroundcolor === null) {
@@ -69,14 +71,12 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
           this.properties.fontcolor = '#fff';
         }
         if (this.properties.enddate === undefined || this.properties.enddate === null) {
+          console.warn('Property enddate is undefined');
           this.properties.enddate = {value: new Date(), displayValue: new Date().toDateString() };
         }else {
           this.properties.enddate = this.properties.enddate;
-        }
-        if (this._resetd === undefined || this._resetd === null) {
-          this._resetd = this.properties.enddate.value;
-        }else {
-          this._resetd = this._resetd;
+          this.properties.isInitialized = true;
+          console.warn('property enddate has been set to previous value');
         }
         if (this.properties.recurrenceValue === undefined || this.properties.recurrenceValue === null) {
             this.properties.recurrenceValue = 0;
@@ -99,7 +99,11 @@ export default class CountdownTimerWebPart extends BaseClientSideWebPart<ICountd
 
   
   protected onPropertyPaneFieldChanged(propPath: string, oldValue: any, newValue:any): void {
-    this.properties[propPath] = newValue;    
+    this.properties[propPath] = newValue;
+    if(propPath === 'enddate' && !this.properties.isInitialized) {
+      this.properties.isInitialized = true;
+      // this._resetd = this.calcReset(this._counter);
+    } 
   }
   
 

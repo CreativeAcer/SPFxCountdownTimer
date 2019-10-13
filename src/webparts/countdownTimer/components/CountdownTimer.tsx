@@ -11,13 +11,11 @@ export interface ICountdownTimerState {
   hoursSpan : number;
   minutesSpan : number;
   secondsSpan : number;
-  resetDate: Date;
   showPlaceholder: Boolean;
 }
 
 export default class CountdownTimer extends React.Component<ICountdownTimerProps, ICountdownTimerState> {
   private timeinterval: any;
-  private resetinterval: any;
 
   constructor(props: any){
     super(props);
@@ -28,7 +26,6 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
       hoursSpan : 0,
       minutesSpan : 0,
       secondsSpan : 0,
-      resetDate: null,
       showPlaceholder: true
     };
 
@@ -43,10 +40,6 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
         });
         // First reset interval then start with new date
         clearInterval(this.timeinterval);
-        // Calc new reset date when date is changed
-        this.setState({
-          resetDate: this.props.enddate.value
-        });
         this.initializeClock(this.props.enddate.value);
       } else {
         this.setState({
@@ -60,16 +53,17 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
   public componentDidMount() {
     // retain set date when refreshing or navigating
     clearInterval(this.timeinterval);
-    this.setState({
-      showPlaceholder: false,
-      resetDate: this.props.enddate.value
-    });
+    if (this.props.isInitialized) {
+      this.setState({
+        showPlaceholder: false,
+      });
+    }
     this.initializeClock(this.props.enddate.value);
   }
 
   public componentWillUnmount() {
       clearInterval(this.timeinterval);
-      clearInterval(this.resetinterval);
+      // clearInterval(this.resetinterval);
   }
 
   private _configureWebPart = () => {
@@ -137,8 +131,8 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
           secondsSpan : 0
         });
         clearInterval(_self.timeinterval);
-        clearInterval(_self.resetinterval);
         if(_self.props.recurrenceValue > 0) {
+          console.warn('setting new dates');
           _self.setNewDates();
         }
       }
@@ -149,25 +143,23 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
   }
 
   private setNewDates(){
-    const _self = this;
-
-    function waitForReset(){
-// hour
-      if(dayjs().isAfter(dayjs(_self.state.resetDate).add(_self.props.delayValue, 'hour'), 'second')) {
-        //day
-        _self.setState({
-          resetDate : dayjs(_self.state.resetDate).add(_self.props.recurrenceValue, 'day').add(_self.props.delayValue, 'hour').toDate()
-        });
-        // Run timer again with new date
-        _self.initializeClock(_self.state.resetDate);
+    let counter = 1;
+    const newDate: Date = (function(_self) {
+      function calcReset(props: any, counter: number){
+        console.info('inside calc reset with counter: ' + counter);
+        if(dayjs().isAfter(dayjs(props.enddate.value).add(props.recurrenceValue * counter, 'day').add(props.delayValue, 'hour'))) {
+          return calcReset(props, counter+1);
+        } else {
+          return dayjs(props.enddate.value).add(props.recurrenceValue * counter, 'day').toDate();
+        }
       }
-    }
+      return calcReset(_self.props, counter);
+    }(this));
 
-    // Update dates with new recurrence
-    waitForReset();
-    this.resetinterval = setInterval(waitForReset, 1000);
-    
+
+    clearInterval(this.timeinterval);
+    // Run timer again with new date
+    this.initializeClock(newDate);    
     
   }
-
 }
