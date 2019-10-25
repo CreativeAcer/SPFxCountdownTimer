@@ -95,11 +95,22 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
     );
   }
 
-  private initializeClock(endtime) {  
+  private handleInterval(fn) {
+    console.log('entered interval handler');
+    if(this.timeinterval){
+      clearInterval(this.timeinterval);
+    }
+    this.timeinterval = setInterval(fn, 1000);
+  }
+
+  private initializeClock(endtime) {
+    // const endingDate = endtime; 
     const _self = this;
 
-    function getTimeRemaining(_endtime) {
-      var t = Date.parse(_endtime) - Date.parse(String(new Date()));
+    function getTimeRemaining(futureDate: Date) {
+      var t = dayjs(futureDate).diff(dayjs());
+      // console.log(t);
+      // var t = Date.parse(futureDate.toDateString()) - Date.parse(String(new Date()));
       var seconds = Math.floor((t / 1000) % 60);
       var minutes = Math.floor((t / 1000 / 60) % 60);
       var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
@@ -130,36 +141,33 @@ export default class CountdownTimer extends React.Component<ICountdownTimerProps
           minutesSpan : 0,
           secondsSpan : 0
         });
-        clearInterval(_self.timeinterval);
-        if(_self.props.recurrenceValue > 0) {
-          console.warn('setting new dates');
+
+        let delayDate = dayjs(endtime).add(_self.props.delayValue, 'hour');
+        if(_self.props.recurrenceValue > 0 && (dayjs().isSame(delayDate, 'second') || dayjs().isAfter(delayDate, 'second'))) {
+          clearInterval(_self.timeinterval);
           _self.setNewDates();
         }
       }
     }
   
     updateClock();
-    this.timeinterval = setInterval(updateClock, 1000);
+    // this.timeinterval = setInterval(updateClock, 1000);
+    this.handleInterval(updateClock);
   }
 
   private setNewDates(){
-    let counter = 1;
-    const newDate: Date = (function(_self) {
-      function calcReset(props: any, counter: number){
-        console.info('inside calc reset with counter: ' + counter);
-        if(dayjs().isAfter(dayjs(props.enddate.value).add(props.recurrenceValue * counter, 'day').add(props.delayValue, 'hour'))) {
-          return calcReset(props, counter+1);
-        } else {
-          return dayjs(props.enddate.value).add(props.recurrenceValue * counter, 'day').toDate();
-        }
-      }
-      return calcReset(_self.props, counter);
-    }(this));
-
-
     clearInterval(this.timeinterval);
+    let calcDate = dayjs(this.props.enddate.value);
+    while (dayjs().isAfter(calcDate, 'second')){
+      calcDate = calcDate.add(this.props.recurrenceValue , 'day');
+    }
+    const newDate = calcDate.toDate();
     // Run timer again with new date
-    this.initializeClock(newDate);    
+    if(dayjs().isBefore(calcDate, 'second')){
+      clearInterval(this.timeinterval);
+      this.initializeClock(newDate); 
+    }
+       
     
   }
 }
